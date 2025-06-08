@@ -22,8 +22,7 @@ def get_char_size(font):
 def image_to_ascii_image(image_path, output_path, style="colored"):
     image = Image.open(image_path).convert("RGB")
     width, height = image.size
-
-    # Nâng sáng cho ảnh màu để tránh tối quá khi dùng style colored
+ 
     if style == "colored":
         enhancer = ImageEnhance.Brightness(image)
         image = enhancer.enhance(1.3)
@@ -36,7 +35,6 @@ def image_to_ascii_image(image_path, output_path, style="colored"):
 
     pixels = list(image.getdata())
 
-    # Nếu style là grayscale hoặc inverted hoặc blocks thì chuyển pixel sang grayscale trước
     if style == "grayscale":
         gray_pixels = [int(sum(px) / 3) for px in pixels]
     elif style == "inverted":

@@ -98,6 +98,6 @@ def main(video_path):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python script.py <path_to_video>")
+        print("Error in somewhere")
     else:
         main(sys.argv[1])
