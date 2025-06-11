@@ -96,27 +96,29 @@ STYLES = {
 }
 
 def gamma_correction(luminance, gamma=0.6):
+    """Apply gamma correction to luminance value"""
     return int(math.pow(luminance/255, gamma) * 255)
 
 def get_block_char(luminance, chars):
+    """Select appropriate character based on luminance"""
     adjusted = gamma_correction(luminance)
     idx = min(len(chars)-1, max(0, adjusted * (len(chars)-1) // 255))
     return chars[idx]
 
 def adjust_channel(c):
+    """Adjust color channel to preserve details in dark areas"""
     return min(255, int(c * 1.2)) if c < 128 else c
 
 def image_to_ascii(image_path, output_path, style='colored', block_size=3):
+    """Convert image to ASCII art with selected style"""
     if style not in STYLES:
-        raise ValueError(f"Style không hợp lệ. Chọn: {', '.join(STYLES.keys())}")
+        raise ValueError(f"Invalid style. Choose from: {', '.join(STYLES.keys())}")
     
     style_config = STYLES[style]
     img = Image.open(image_path).convert("RGB")  
     
-    
     if 'preprocess' in style_config:
         img = style_config['preprocess'](img)
-    
     
     if style_config['color']:
         img = img.convert("RGB")
@@ -127,7 +129,6 @@ def image_to_ascii(image_path, output_path, style='colored', block_size=3):
     new_width = width // block_size
     new_height = height // block_size
 
-    
     try:
         font = ImageFont.truetype("Courier.ttf", 14)
     except:
@@ -143,7 +144,6 @@ def image_to_ascii(image_path, output_path, style='colored', block_size=3):
     
     for y in range(new_height):
         for x in range(new_width):
-            
             block_pixels = []
             for dy in range(block_size):
                 for dx in range(block_size):
@@ -156,7 +156,6 @@ def image_to_ascii(image_path, output_path, style='colored', block_size=3):
                 continue
                 
             if style_config['color']:
-                
                 avg_r = sum(p[0] for p in block_pixels) // len(block_pixels)
                 avg_g = sum(p[1] for p in block_pixels) // len(block_pixels)
                 avg_b = sum(p[2] for p in block_pixels) // len(block_pixels)
@@ -168,7 +167,6 @@ def image_to_ascii(image_path, output_path, style='colored', block_size=3):
                 luminance = 0.2126 * avg_r + 0.7152 * avg_g + 0.0722 * avg_b
                 color = (avg_r, avg_g, avg_b)
             else:
-                
                 luminance = sum(block_pixels) // len(block_pixels)
                 color = (0, 0, 0) if style_config.get('bg', 'black') == 'white' else (255, 255, 255)
             
@@ -177,22 +175,23 @@ def image_to_ascii(image_path, output_path, style='colored', block_size=3):
             draw.text((x * char_width, y * char_height), char, fill=color)
     
     out_img.save(output_path, quality=95)
-    print(f"✅ Đã tạo ASCII art: {style} (block: {block_size})")
+    print(f"✅ Created ASCII art: {style} (block: {block_size})")
 
 def get_char_size(font):
+    """Get character dimensions"""
     bbox = font.getbbox("█")
     return (bbox[2] - bbox[0], bbox[3] - bbox[1])
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Tạo ASCII Art từ ảnh")
-    parser.add_argument("input_image", help="Đường dẫn ảnh đầu vào")
+    parser = argparse.ArgumentParser(description="Convert image to ASCII art")
+    parser.add_argument("input_image", help="Path to input image")
     parser.add_argument("--style", default="colored", choices=STYLES.keys(),
-                      help=f"Kiểu ASCII: {', '.join(STYLES.keys())}")
+                      help=f"ASCII style: {', '.join(STYLES.keys())}")
     parser.add_argument("--block", type=int, default=3,
-                      help="Kích thước block (1-6)")
-    parser.add_argument("--output", help="Đường dẫn đầu ra (phải có phần mở rộng .png)")
+                      help="Block size (1-6)")
+    parser.add_argument("--output", help="Output path (must include .png extension)")
     
     args = parser.parse_args()
 
